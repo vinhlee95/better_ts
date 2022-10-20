@@ -4,12 +4,12 @@ type PaymentPayPalPayload = {paymentMethod: 'paypal', payload: {postalCode: stri
 type PaymentMobilePayPayload = {paymentMethod: 'mobilepay', payload: {phoneNumber: string}}
 type PaymentPayload = PaymentCardPayload | PaymentPayPalPayload | PaymentMobilePayPayload
 const handlePayment = <T extends PaymentPayload['paymentMethod']>(
-  ...args: Extract<PaymentPayload, {paymentMethod: T}> extends {payload: infer Payload}
-  ? [paymentMethod: T, payload: Payload]
+  args: Extract<PaymentPayload, {paymentMethod: T}> extends {payload: infer Payload}
+  ? {paymentMethod: T, payload: Payload}
   // Always require payload object
   : never
   // Can do this to allow omit payload object
-  // : [paymentMethod: T]
+  // : {paymentMethod: T}
 ) => {
   const handleCardPayment = (cardPayload: PaymentCardPayload['payload']) => {
     console.log('handle card payment', cardPayload)
@@ -25,10 +25,10 @@ const handlePayment = <T extends PaymentPayload['paymentMethod']>(
     }
   }
 
-  switch(args[0]) {
+  switch(args.paymentMethod) {
     case 'card':
-      assertCardPayload(args[1])
-      return handleCardPayment(args[1])
+      assertCardPayload(args.payload)
+      return handleCardPayment(args.payload)
     case 'paypal':
       // Need similar type assertion here
       return handlePayPalPayment({postalCode: '00100'})
@@ -51,11 +51,11 @@ const handleOrder = (order: Order) => {
   // Handle payment
   switch(order.paymentMethod) {
     case 'card':
-      return handlePayment('card', {shippingCountry: order.shippingCountry})
+      return handlePayment({paymentMethod: 'card', payload: {shippingCountry: order.shippingCountry}})
     case 'paypal':
-      return handlePayment('paypal', {postalCode: order.postalCode})
+      return handlePayment({paymentMethod: 'paypal', payload: {postalCode: order.postalCode}})
     case 'mobilepay':
-      return handlePayment('mobilepay', {phoneNumber: order.phoneNumber})
+      return handlePayment({paymentMethod: 'mobilepay', payload: {phoneNumber: order.phoneNumber}})
     default:
       throw new Error('not supported payment method')
   }
