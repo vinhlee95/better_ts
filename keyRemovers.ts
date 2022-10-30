@@ -2,7 +2,7 @@ const getObjectKeys = <Obj extends Object>(obj: Obj): (keyof Obj)[] => {
   return Object.keys(obj) as (keyof Obj)[]
 }
 
-const makeKeyRemover = <Key extends string>(keys: Key[]) => 
+const makeKeyRemover = <Key extends PropertyKey>(keys: Key[]) => 
   <Obj extends Object>(obj: Obj): Omit<Obj, Key> => 
   getObjectKeys(obj).reduce((finalObj, currentKey) => keys.includes(currentKey as Key) ? finalObj : {...finalObj, [currentKey]: obj[currentKey]}, {} as Omit<Obj, Key>)
 
